@@ -1,5 +1,5 @@
 [package]
-name = "car-services-backend"
+name = "vroomgine"
 version = "0.1.0"
 edition = "2021"
 
@@ -29,8 +29,8 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 # Error handling
-anyhow = "1.0.86"
-thiserror = "1.0.59"
+anyhow = "1.0"
+thiserror = "1.0"
 
 # OSM data parsing
 osmpbf = "0.2.5"
