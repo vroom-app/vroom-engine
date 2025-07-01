@@ -5,44 +5,44 @@ edition = "2021"
 
 [dependencies]
 # Web framework
-axum = "0.7"
-tokio = { version = "1.0", features = ["full"] }
-tower = "0.4"
-tower-http = { version = "0.5", features = ["cors"] }
+axum = "0.7.5"
+tokio = { version = "1.37", features = ["full"] }
+tower = "0.4.13"
+tower-http = { version = "0.5.2", features = ["cors"] }
 
 # Database
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
-uuid = { version = "1.0", features = ["v4", "serde"] }
+sqlx = { version = "0.7.4", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
+uuid = { version = "1.8", features = ["v4", "serde"] }
 
 # Serialization
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = "1.0.117"
 
 # Time
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4.38", features = ["serde"] }
 
 # Env
-dotenvy = "0.15"
+dotenvy = "0.15.7"
 
 # Logging
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 # Error handling
-anyhow = "1.0"
-thiserror = "1.0"
+anyhow = "1.0.86"
+thiserror = "1.0.59"
 
 # OSM data parsing
-osmpbf = "0.2"
-geo = "0.27"
-geo-types = "0.7"
+osmpbf = "0.2.5"
+geo = "0.27.0"
+geo-types = "0.7.12"
 
 # HTTP client
-reqwest = { version = "0.11", features = ["json", "stream"] }
-tokio-util = { version = "0.7", features = ["io"] }
+reqwest = { version = "0.12.4", features = ["json", "stream", "rustls-tls"] }
+tokio-util = { version = "0.7.11", features = ["io"] }
 
-# Cmd 
-clap = { version = "4.0", features = ["derive"] }
+# CLI
+clap = { version = "4.5.4", features = ["derive"] }
 
 [dev-dependencies]
-tokio-test = "0.4"
+tokio-test = "0.4.4"
