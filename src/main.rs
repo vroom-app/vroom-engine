@@ -2,11 +2,14 @@ use axum::{
     routing::{get},
     Router,
 };
-use vroomgine::Config;
+use sqlx::migrate::Migrator;
+use vroomgine::{database::create_pool, Config};
 
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+static MIGRATOR: Migrator = sqlx::migrate!();
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,7 +24,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Load configuration
     let config = Config::from_env()?;
-    tracing::info!("Configuration loaded successfully");
+    tracing::info!("Configuration loaded successfully.");
+
+    // Create database connection pool
+    let pool = create_pool(&config.database_url).await?;
+    tracing::info!("Database connection pool created.");
+
+    MIGRATOR.run(&pool).await?;
+    tracing::info!("Database migration successfully done.");
 
     // Build application routes
     let app = Router::new()

@@ -1,3 +1,4 @@
+-- Add up migration script here
 -- Enable PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
 
