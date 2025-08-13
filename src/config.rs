@@ -4,8 +4,9 @@ use crate::error::{AppError, Result};
 #[derive(Debug, Clone)]
 pub struct Config {
     pub database_url: String,
-    pub osm_data_url: String,
-    pub server_port: u16
+    pub server_port: u16,
+    pub overpass_api_url: String,
+    pub overpass_timeout: u64,
 }
 
 impl Config {
@@ -15,9 +16,6 @@ impl Config {
         let database_url = env::var("DATABASE_URL")
             .map_err(|_| AppError::Config("DATABASE_URL must be set".to_string()))?;
 
-        let osm_data_url = env::var("OSM_DATA_URL")
-            .unwrap_or_else(|_| "https://download.geofabrik.de/europe/bulgaria-latest.osm.pbf".to_string());
-
         let server_port = env::var("SERVER_PORT")
             .unwrap_or_else(|_| "3000".to_string())
             .parse::<u16>()
@@ -25,8 +23,9 @@ impl Config {
 
         Ok(Config {
             database_url,
-            osm_data_url,
             server_port,
+            overpass_api_url: "https://overpass-api.de/api/interpreter".to_string(),
+            overpass_timeout: 50,
         })
     }
 }

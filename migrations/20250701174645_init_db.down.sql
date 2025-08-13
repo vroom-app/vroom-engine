@@ -1,4 +1,3 @@
--- Add down migration script here
 -- Drop trigger
 DROP TRIGGER IF EXISTS update_businesses_updated_at ON businesses;
 
