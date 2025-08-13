@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
+use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
-use crate::models::category::{BusinessCategory};
+use crate::domain::entities::category::BusinessCategory;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Business {
@@ -74,7 +76,7 @@ impl BusinessInsert {
         osm_id: i64,
         lat: f64,
         lon: f64,
-        tags: std::collections::HashMap<String, String>,
+        tags: HashMap<String, String>,
     ) -> Self {
         let categories = BusinessCategory::from_osm_tags(&tags);
 
@@ -90,45 +92,7 @@ impl BusinessInsert {
         }
     }
 
-    pub async fn upsert(&self, pool: &sqlx::PgPool) -> Result<Uuid, sqlx::Error> {
-        let result = sqlx::query!(
-            r#"
-            INSERT INTO search.businesses (
-                osm_id, name, name_en, address, location,
-                categories, city
-            )
-            VALUES (
-                $1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326),
-                $7::search.business_category[], $8
-            )
-            ON CONFLICT (osm_id)
-            DO UPDATE SET
-                name            = EXCLUDED.name,
-                name_en         = EXCLUDED.name_en,
-                address         = EXCLUDED.address,
-                location        = EXCLUDED.location,
-                categories      = EXCLUDED.categories,
-                updated_at      = NOW(),
-                city            = EXCLUDED.city
-            WHERE search.businesses.is_registered = FALSE
-            RETURNING id
-            "#,
-            self.osm_id,
-            self.name,
-            self.name_en,
-            self.address,
-            self.longitude,
-            self.latitude,
-            &self.categories as &[BusinessCategory],
-            self.city,
-        )
-        .fetch_one(pool)
-        .await?;
-
-        Ok(result.id)
-    }
-
-    fn build_address(tags: &std::collections::HashMap<String, String>) -> Option<String> {
+    fn build_address(tags: &HashMap<String, String>) -> Option<String> {
         let mut parts = Vec::new();
         if let Some(street) = tags.get("addr:street") {
             if let Some(number) = tags.get("addr:housenumber") {
@@ -137,14 +101,27 @@ impl BusinessInsert {
                 parts.push(street.clone());
             }
         }
-        for key in &[
-            "addr:city", "addr:postcode", "addr:country",
-        ] {
+        for key in &["addr:city", "addr:postcode", "addr:country"] {
             if let Some(v) = tags.get(*key) {
                 parts.push(v.clone());
             }
         }
         (!parts.is_empty()).then(|| parts.join(", "))
+    }
+}
+
+
+impl Business {
+    pub fn to_response(self) -> BusinessResponse {
+        self.into()
+    }
+
+    pub fn matches_search_term(&self, term: &str) -> bool {
+        let term_lower = term.to_lowercase();
+        
+        self.name.as_ref().map_or(false, |n| n.to_lowercase().contains(&term_lower)) ||
+        self.address.as_ref().map_or(false, |a| a.to_lowercase().contains(&term_lower)) ||
+        self.categories.iter().any(|c| c.display_name().to_lowercase().contains(&term_lower))
     }
 }
 
@@ -173,45 +150,5 @@ impl From<Business> for BusinessResponse {
             },
             isRegistered: business.is_registered,
         }
-    }
-}
-
-// Optional: Business filtering and search structures
-#[derive(Debug, Deserialize)]
-pub struct BusinessFilter {
-    pub categories: Option<Vec<String>>,
-    pub has_contact: Option<bool>,
-    pub is_registered: Option<bool>,
-    pub search_term: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct LocationFilter {
-    pub latitude: f64,
-    pub longitude: f64,
-    pub radius_km: f64,
-}
-
-#[derive(Debug, Serialize)]
-pub struct BusinessListResponse {
-    pub businesses: Vec<BusinessResponse>,
-    pub total_count: i64,
-    pub page: i64,
-    pub per_page: i64,
-}
-
-impl Business {
-    /// Convert to API response format
-    pub fn to_response(self) -> BusinessResponse {
-        self.into()
-    }
-
-    /// Check if business matches search term
-    pub fn matches_search_term(&self, term: &str) -> bool {
-        let term_lower = term.to_lowercase();
-        
-        self.name.as_ref().map_or(false, |n| n.to_lowercase().contains(&term_lower)) ||
-        self.address.as_ref().map_or(false, |a| a.to_lowercase().contains(&term_lower)) ||
-        self.categories.iter().any(|c| c.display_name().to_lowercase().contains(&term_lower))
     }
 }

@@ -2,17 +2,8 @@ use std::collections::HashMap;
 
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
-#[derive(Error, Debug)]
-pub enum OverpassError {
-    #[error("HTTP request failed: {0}")]
-    Http(#[from] reqwest::Error),
-    #[error("JSON parsing failed: {0}")]
-    Json(#[from] serde_json::Error),
-    #[error("Query execution failed: {0}")]
-    Query(String),
-}
+use crate::shared::error::AppError;
 
 #[derive(Debug, Clone)]
 pub struct OverpassService {
@@ -59,7 +50,7 @@ impl OverpassService {
     pub async fn execute_query(
         &self,
         query: &OverpassQuery,
-    ) -> Result<Vec<OverpassElement>, OverpassError> {
+    ) -> Result<Vec<OverpassElement>, AppError> {
         tracing::debug!("Executing Overpass query: {}", query.query);
 
         let response = self
@@ -71,7 +62,7 @@ impl OverpassService {
             .await?;
 
         if !response.status().is_success() {
-            return Err(OverpassError::Query(format!(
+            return Err(AppError::OsmParsing(format!(
                 "HTTP {}: {}",
                 response.status(),
                 response.text().await.unwrap_or_default()

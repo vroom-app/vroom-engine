@@ -1,11 +1,11 @@
 pub mod config;
-pub mod database;
-pub mod error;
-pub mod handlers;
-pub mod models;
-pub mod services;
-pub mod state;
-pub mod repositories;
-
-pub use config::Config;
-pub use error::{AppError, Result};
+// pub mod database;
+// pub mod handlers;
+// pub mod models;
+// pub mod services;
+// pub mod state;
+pub mod application;
+// pub mod repositories;
+pub mod infrastructure;
+pub mod shared;
+pub mod domain;

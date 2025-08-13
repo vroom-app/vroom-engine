@@ -8,13 +8,7 @@ use sqlx::migrate::Migrator;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
-use vroomgine::{
-    config::Config,
-    database::create_pool,
-    handlers,
-    state::AppState,
-};
+use vroomgine::{application::{handlers::{business::{search_businesses_by_radius_and_category, sync_businesses, sync_user_business}, health::health_check}, state::AppState}, config::config::Config, infrastructure::database::create_pool};
 
 static MIGRATOR: Migrator = sqlx::migrate!();
 
@@ -46,12 +40,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Build application routes
     let app = Router::new()
-        .route("/search/health", get(handlers::health::health_check))
-        .route("/search/businesses/sync", post(handlers::business::sync_businesses))
-        .route("/search/businesses/sync", put(handlers::business::sync_user_business))
-        .route("/search/businesses", get(handlers::business::list_businesses))
-        .route("/search/businesses/search/radius", get(handlers::business::search_businesses_by_radius))
-        .route("/search/businesses/search/radius-category", get(handlers::business::search_businesses_by_radius_and_category))
+        .route("/health", get(health_check))
+        .route("/businesses/sync", post(sync_businesses))
+        .route("/businesses/sync", put(sync_user_business))
+        .route("/businesses/search/radius-category", get(search_businesses_by_radius_and_category))
         .with_state(state)
         .layer(
             ServiceBuilder::new()

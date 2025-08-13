@@ -1,7 +1,6 @@
-use crate::error::Result;
 use std::time::Duration;
-use sqlx::{ PgPool };
-
+use crate::shared::error::Result;
+use sqlx::PgPool;
 
 pub async fn create_pool(database_url: &str) -> Result<PgPool> {
     let pool = sqlx::postgres::PgPoolOptions::new()
@@ -12,10 +11,8 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool> {
 
     tracing::info!("Pool was initialized.");
 
-    let _ = sqlx::query("SELECT 1")
-        .fetch_one(&pool)
-        .await?;
+    let _ = sqlx::query("SELECT 1").fetch_one(&pool).await?;
 
-    tracing::info!("Database connection was successflully established.");
+    tracing::info!("Database connection was successfully established.");
     Ok(pool)
 }

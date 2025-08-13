@@ -1,5 +1,5 @@
 use std::env;
-use crate::error::{AppError, Result};
+use crate::shared::error::{AppError, Result};
 
 #[derive(Debug, Clone)]
 pub struct Config {
