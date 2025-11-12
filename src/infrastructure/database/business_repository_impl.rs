@@ -1,4 +1,4 @@
-use axum::async_trait;
+use async_trait::async_trait;
 use sqlx::PgPool;
 use uuid::Uuid;
 use crate::application::handlers::business::CreateUserBusinessRequest;
@@ -7,6 +7,7 @@ use crate::domain::repositories::business_repository::BusinessRepository;
 use crate::domain::entities::business::{Business, BusinessInsert};
 use crate::infrastructure::external::overpass::OverpassElement;
 use crate::shared::error::{Result};
+use num_traits::cast::ToPrimitive;
 
 pub struct PostgresBusinessRepository {
     pool: PgPool,
@@ -76,11 +77,11 @@ impl BusinessRepository for PostgresBusinessRepository {
         sqlx::query!(
             r#"
             INSERT INTO search.businesses (
-            id, name, name_en, address, location, categories, specializations, is_registered, city, logo_map_url
+            id, name, name_en, address, location, categories, specializations, is_registered, city, logo_map_url, average_reviews, review_count
             ) VALUES (
             $1, $2, $3, $4,
             ST_SetSRID(ST_MakePoint($5, $6), 4326),
-            $7::search.business_category[], $8, TRUE, $9, $10
+            $7::search.business_category[], $8, TRUE, $9, $10, $11, $12
             )
             ON CONFLICT (id) DO UPDATE SET
             name = EXCLUDED.name,
@@ -91,7 +92,9 @@ impl BusinessRepository for PostgresBusinessRepository {
             specializations = EXCLUDED.specializations,
             is_registered = TRUE,
             city = EXCLUDED.city,
-            logo_map_url = EXCLUDED.logo_map_url
+            logo_map_url = EXCLUDED.logo_map_url,
+            average_reviews = EXCLUDED.average_reviews,
+            review_count = EXCLUDED.review_count
             "#,
             id,
             req.name,
@@ -102,7 +105,9 @@ impl BusinessRepository for PostgresBusinessRepository {
             &req.categories as &[BusinessCategory],
             specialization as &[String],
             req.city,
-            req.logo_map_url
+            req.logo_map_url,
+            req.average_reviews,
+            req.review_count.unwrap_or(0)
         )
         .execute(&self.pool)
         .await?;
@@ -129,7 +134,9 @@ impl BusinessRepository for PostgresBusinessRepository {
                 updated_at,
                 logo_map_url,
                 is_registered,
-                city
+                city,
+                average_reviews,
+                review_count
             FROM search.businesses
             WHERE id = $1
             "#,
@@ -152,7 +159,9 @@ impl BusinessRepository for PostgresBusinessRepository {
             updated_at: row.updated_at.expect("updated_at should never be null"),
             logo_map_url: row.logo_map_url,
             is_registered: row.is_registered.unwrap_or(false),
-            city: row.city
+            city: row.city,
+            average_reviews: row.average_reviews.to_f64().unwrap_or(0.0),
+            review_count: row.review_count,
         }))
     }
 
@@ -183,6 +192,8 @@ impl BusinessRepository for PostgresBusinessRepository {
                 logo_map_url,
                 is_registered,
                 city,
+                average_reviews,
+                review_count,
                 ST_Distance(
                     location,
                     ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
@@ -223,7 +234,9 @@ impl BusinessRepository for PostgresBusinessRepository {
             updated_at: row.updated_at.expect("updated_at should never be null"),
             logo_map_url: row.logo_map_url,
             is_registered: row.is_registered.unwrap_or(false),
-            city: row.city
+            city: row.city,
+            average_reviews: row.average_reviews.to_f64().unwrap_or(0.0),
+            review_count: row.review_count,
         }).collect())
     }
 }

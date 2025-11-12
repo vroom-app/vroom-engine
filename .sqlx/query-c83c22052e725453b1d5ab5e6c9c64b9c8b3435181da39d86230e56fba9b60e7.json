@@ -1,0 +1,140 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                id,\n                osm_id,\n                name,\n                name_en,\n                address,\n                ST_Y(location) as latitude,\n                ST_X(location) as longitude,\n                categories as \"categories!: Vec<BusinessCategory>\",\n                specializations as \"specializations!: Vec<String>\",\n                created_at,\n                updated_at,\n                logo_map_url,\n                is_registered,\n                city,\n                average_reviews,\n                review_count\n            FROM search.businesses\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "osm_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "name_en",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "address",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "latitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "longitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 7,
+        "name": "categories!: Vec<BusinessCategory>",
+        "type_info": {
+          "Custom": {
+            "name": "search.business_category[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "search.business_category",
+                  "kind": {
+                    "Enum": [
+                      "car_wash",
+                      "car_repair",
+                      "parking",
+                      "gas_station",
+                      "electric_vehicle_charging_station",
+                      "car_dealer",
+                      "car_rental",
+                      "detailing_studio",
+                      "rims_shop",
+                      "tuning",
+                      "tire_shop",
+                      "car_inspection_station",
+                      "mobile"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "specializations!: Vec<String>",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "logo_map_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "is_registered",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 13,
+        "name": "city",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "average_reviews",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 15,
+        "name": "review_count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      null,
+      null,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "c83c22052e725453b1d5ab5e6c9c64b9c8b3435181da39d86230e56fba9b60e7"
+}

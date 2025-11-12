@@ -1,0 +1,150 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                id,\n                osm_id,\n                name,\n                name_en,\n                address,\n                ST_Y(location) as latitude,\n                ST_X(location) as longitude,\n                categories as \"categories!: Vec<BusinessCategory>\",\n                specializations as \"specializations!: Vec<String>\",\n                created_at,\n                updated_at,\n                logo_map_url,\n                is_registered,\n                city,\n                average_reviews,\n                review_count,\n                ST_Distance(\n                    location,\n                    ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography\n                ) as distance_meters\n            FROM search.businesses\n            WHERE ST_DWithin(\n                location,\n                ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,\n                $3 * 1000\n            )\n            AND $4 = ANY(categories::text[])\n            ORDER BY ST_Distance(\n                location,\n                ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography\n            )\n            LIMIT $5\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "osm_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "name_en",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "address",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "latitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "longitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 7,
+        "name": "categories!: Vec<BusinessCategory>",
+        "type_info": {
+          "Custom": {
+            "name": "search.business_category[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "search.business_category",
+                  "kind": {
+                    "Enum": [
+                      "car_wash",
+                      "car_repair",
+                      "parking",
+                      "gas_station",
+                      "electric_vehicle_charging_station",
+                      "car_dealer",
+                      "car_rental",
+                      "detailing_studio",
+                      "rims_shop",
+                      "tuning",
+                      "tire_shop",
+                      "car_inspection_station",
+                      "mobile"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "specializations!: Vec<String>",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "logo_map_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "is_registered",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 13,
+        "name": "city",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "average_reviews",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 15,
+        "name": "review_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 16,
+        "name": "distance_meters",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Float8",
+        "Int4",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      null,
+      null,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "03cf7654db65c15dd1f9a56c32e1e22be2a7de500a1e35ca24c2b0ec9b6ec984"
+}

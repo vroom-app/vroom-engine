@@ -3,6 +3,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use bigdecimal::BigDecimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::sync::Arc;
@@ -39,7 +40,9 @@ pub struct CreateUserBusinessRequest {
     pub categories: Vec<BusinessCategory>,
     pub specializations: Option<Vec<String>>,
     pub city: Option<String>,
-    pub logo_map_url: Option<String>
+    pub logo_map_url: Option<String>,
+    pub average_reviews: Option<BigDecimal>,
+    pub review_count: Option<i32>, 
 }
 
 pub async fn sync_businesses(
