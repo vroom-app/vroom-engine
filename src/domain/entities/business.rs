@@ -23,6 +23,8 @@ pub struct Business {
     pub logo_map_url: Option<String>,
     pub is_registered: bool,
     pub city: Option<String>,
+    pub average_reviews: f64,
+    pub review_count: i32, 
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -67,8 +69,8 @@ pub struct Location {
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Rating {
-    pub averageReviews: Option<f32>,
-    pub numReviews: Option<u32>,
+    pub averageReviews: f64,
+    pub numReviews: i32,
 }
 
 impl BusinessInsert {
@@ -145,8 +147,8 @@ impl From<Business> for BusinessResponse {
                 mapLogo: business.logo_map_url, 
             },
             rating: Rating { 
-                averageReviews: Some(5.0), 
-                numReviews: Some(1) 
+                averageReviews: business.average_reviews, 
+                numReviews: business.review_count 
             },
             isRegistered: business.is_registered,
         }

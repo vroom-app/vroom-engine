@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
 use strum_macros::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, sqlx::Type, Display)]
-#[sqlx(type_name = "business_category", rename_all = "snake_case")]
+#[sqlx(type_name = "search._business_category", rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum BusinessCategory {
     CarWash,
@@ -20,12 +19,6 @@ pub enum BusinessCategory {
     Tuning,
     TireShop,
     CarInspectionStation,
-}
-
-impl PgHasArrayType for BusinessCategory {
-    fn array_type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("search._business_category")
-    }
 }
 
 impl BusinessCategory {

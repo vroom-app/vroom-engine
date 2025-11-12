@@ -1,4 +1,4 @@
-use axum::async_trait;
+use async_trait::async_trait;
 use uuid::Uuid;
 use crate::application::handlers::business::CreateUserBusinessRequest;
 use crate::domain::entities::business::{Business};
