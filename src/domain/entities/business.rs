@@ -25,6 +25,7 @@ pub struct Business {
     pub city: Option<String>,
     pub average_reviews: f64,
     pub review_count: i32, 
+    pub slack: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,6 +51,7 @@ pub struct BusinessResponse {
     pub media: Media,
     pub isRegistered: bool,
     pub rating: Rating,
+    pub slack: Option<String>,
 }
 
 #[allow(non_snake_case)]
@@ -151,6 +153,7 @@ impl From<Business> for BusinessResponse {
                 numReviews: business.review_count 
             },
             isRegistered: business.is_registered,
+            slack: business.slack
         }
     }
 }

@@ -1,13 +1,11 @@
 use axum::{
-    extract::{Query, State},
-    http::StatusCode,
-    Json,
+    Json, extract::{Query, State, rejection::JsonRejection}, http::StatusCode
 };
 use bigdecimal::BigDecimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::{application::state::AppState, domain::entities::{business::BusinessResponse, category::BusinessCategory}};
+use crate::{application::state::AppState, domain::entities::{business::BusinessResponse, category::BusinessCategory}, shared::error::AppError};
 
 #[derive(Debug, Deserialize)]
 pub struct SyncRequest {
@@ -41,8 +39,9 @@ pub struct CreateUserBusinessRequest {
     pub specializations: Option<Vec<String>>,
     pub city: Option<String>,
     pub logo_map_url: Option<String>,
-    pub average_reviews: Option<BigDecimal>,
-    pub review_count: Option<i32>, 
+    pub average_reviews: BigDecimal,
+    pub review_count: i32, 
+    pub slack: String,
 }
 
 pub async fn sync_businesses(
@@ -67,14 +66,19 @@ pub async fn sync_businesses(
 
 pub async fn sync_user_business(
     State(state): State<Arc<AppState>>,
-    Json(req): Json<CreateUserBusinessRequest>,
-) -> Result<Json<BusinessResponse>, StatusCode> {
+    payload: Result<Json<CreateUserBusinessRequest>, JsonRejection>,
+) -> Result<Json<BusinessResponse>, AppError> {
+    let Json(req) = payload.map_err(|e| {
+        tracing::error!("Failed to parse json request: {}", e);
+        AppError::Import(format!("Invalid JSON payload: {}", e))
+    })?;
+
     let business = state.business_service
         .create_user_business(req)
         .await
         .map_err(|e| {
             tracing::error!("Failed to create user business: {}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            e
         })?;
 
     Ok(Json(business.to_response()))

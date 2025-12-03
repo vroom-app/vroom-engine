@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use bigdecimal::BigDecimal;
 use sqlx::PgPool;
 use uuid::Uuid;
 use crate::application::handlers::business::CreateUserBusinessRequest;
@@ -77,11 +78,11 @@ impl BusinessRepository for PostgresBusinessRepository {
         sqlx::query!(
             r#"
             INSERT INTO search.businesses (
-            id, name, name_en, address, location, categories, specializations, is_registered, city, logo_map_url, average_reviews, review_count
+            id, name, name_en, address, location, categories, specializations, is_registered, city, logo_map_url, average_reviews, review_count, slack
             ) VALUES (
             $1, $2, $3, $4,
             ST_SetSRID(ST_MakePoint($5, $6), 4326),
-            $7::search.business_category[], $8, TRUE, $9, $10, $11, $12
+            $7::search.business_category[], $8, TRUE, $9, $10, $11, $12, $13
             )
             ON CONFLICT (id) DO UPDATE SET
             name = EXCLUDED.name,
@@ -94,7 +95,8 @@ impl BusinessRepository for PostgresBusinessRepository {
             city = EXCLUDED.city,
             logo_map_url = EXCLUDED.logo_map_url,
             average_reviews = EXCLUDED.average_reviews,
-            review_count = EXCLUDED.review_count
+            review_count = EXCLUDED.review_count,
+            slack = EXCLUDED.slack
             "#,
             id,
             req.name,
@@ -107,7 +109,8 @@ impl BusinessRepository for PostgresBusinessRepository {
             req.city,
             req.logo_map_url,
             req.average_reviews,
-            req.review_count.unwrap_or(0)
+            req.review_count,
+            req.slack
         )
         .execute(&self.pool)
         .await?;
@@ -127,7 +130,7 @@ impl BusinessRepository for PostgresBusinessRepository {
                 name_en,
                 address,
                 ST_Y(location) as latitude,
-                ST_X(location) as longitude,
+                ST_X(location) as longitude, 
                 categories as "categories!: Vec<BusinessCategory>",
                 specializations as "specializations!: Vec<String>",
                 created_at,
@@ -136,7 +139,8 @@ impl BusinessRepository for PostgresBusinessRepository {
                 is_registered,
                 city,
                 average_reviews,
-                review_count
+                review_count,
+                slack
             FROM search.businesses
             WHERE id = $1
             "#,
@@ -162,6 +166,7 @@ impl BusinessRepository for PostgresBusinessRepository {
             city: row.city,
             average_reviews: row.average_reviews.to_f64().unwrap_or(0.0),
             review_count: row.review_count,
+            slack: row.slack,
         }))
     }
 
@@ -194,6 +199,7 @@ impl BusinessRepository for PostgresBusinessRepository {
                 city,
                 average_reviews,
                 review_count,
+                slack,
                 ST_Distance(
                     location,
                     ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
@@ -237,6 +243,7 @@ impl BusinessRepository for PostgresBusinessRepository {
             city: row.city,
             average_reviews: row.average_reviews.to_f64().unwrap_or(0.0),
             review_count: row.review_count,
+            slack: row.slack
         }).collect())
     }
 }
